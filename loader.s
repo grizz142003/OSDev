@@ -1,25 +1,30 @@
+
 global loader
+
 MAGIC_NUMBER equ 0x1BADB002
 FLAGS equ 0x0
 CHECKSUM equ -MAGIC_NUMBER
+
 section .text:
 align 4
     dd MAGIC_NUMBER
     dd FLAGS
-    DD CHECKSUM
+    dd CHECKSUM
 
 loader:
-    KERNEL_STACK_SIZE equ 4096
-    section .bss
-    kernel_stack:
-        resb KERNEL_STACK_SIZE
     mov esp, kernel_stack + KERNEL_STACK_SIZE
-    
-    extern kmain
 
-    push dword 3
-    push dword 2
-    push dword 1
+    extern kmain
     call kmain
+    
 .loop:
-    jmp .loop
+    jmp $
+
+
+section .bss
+align 4
+KERNEL_STACK_SIZE equ 4096
+kernel_stack:
+    resb KERNEL_STACK_SIZE
+
+
