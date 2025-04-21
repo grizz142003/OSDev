@@ -1,6 +1,8 @@
 
 global loader
 
+BITS 32
+
 MAGIC_NUMBER equ 0x1BADB002
 FLAGS equ 0x0
 CHECKSUM equ -MAGIC_NUMBER
@@ -14,8 +16,10 @@ align 4
 loader:
     mov esp, kernel_stack + KERNEL_STACK_SIZE
 
+
     extern kmain
     call kmain
+
     
 .loop:
     jmp $
