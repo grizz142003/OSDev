@@ -38,4 +38,40 @@ static void scroll(void){
 
 void fb_clear(void){
     
+    uint16_t blank = DEFAULT_TEXT | ' ';
+    
+    for (int row = 0; row < VGA_LENGTH; row++){
+        for (int col = 0; col < VGA_WIDTH; col++){
+            VGA_BUFF[row *VGA_WIDTH + col] = blank;
+        }
+    }
+    set_curser(0);
 }
+int fb_write(const char *buf, uint32_t len){
+    
+    uint32_t i;
+    uint16_t pos = get_curser();
+    
+    for (i = 0; i < len; i++) {
+        char c = buf[i];
+        switch (c) {
+            case '\n':
+                pos = ((pos / VGA_WIDTH) + 1) * VGA_WIDTH;
+                break;
+            
+            case '\r': 
+                pos -= pos % VGA_WIDTH;
+                break;
+            
+            default:
+                VGA_BUFF[pos++] = DEFAULT_TEXT | (uint8_t)c;
+        }
+        if (pos > VGA_WIDTH * VGA_LENGTH){
+            scroll();
+            pos -= VGA_WIDTH;
+        }
+    }
+    set_curser(pos);
+    return i;
+}
+
