@@ -1,5 +1,5 @@
 #include "FrameBuff.h"
-
+#include "serial.h"
 /*void fb_move_curser(unsigned short pos)
 {
     outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
@@ -8,20 +8,14 @@
     outb(FB_DATA_PORT, pos & 0x00FF);
 }
     */
-void char_out(char message[], uint8_t color){
-    uint16_t* vga = (uint16_t*)VGA_TEXT_BUFFER;
-
-    for (int i = 0; message[i] != '\0'; i++){
-        vga[i] = (color << 8) | message[i];
-    }
-}
-
 
 void kmain(void){
-    char message[] = "This message is meant to be long \n and \r to\n test";
-    
-    fb_write(message, 49);
+    char message[] = "Gianlucas simple os";
     fb_clear();
+    fb_write(message, 20);
+    serial_configure_baud_rate(SERIAL_COM1_BASE, 12);
+    serial_configure_line(SERIAL_COM1_BASE);
+    serial_write(SERIAL_COM1_BASE, message, 20);
 
     while(1);
 }

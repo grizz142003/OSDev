@@ -14,6 +14,10 @@ align 4
     dd CHECKSUM
 
 loader:
+    
+    ;extern gdt
+    ;call gdt
+     
     mov esp, kernel_stack + KERNEL_STACK_SIZE
 
 
