@@ -1,49 +1,38 @@
 #include "gdt.h"
 
-struct gdt_entry gdt[3];
+#define GDT_ENTRIES 5
+struct GDTEntry gdt[GDT_ENTRIES];
+struct GDTPointer gdt_ptr;
 
-void load_gdt(struct gdt *gdt_ptr){
-    asm volatile("lgdt (%0)" : : "r"(gdt_ptr));
+void set_gdt_entry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
+    gdt[num].base_low    = base & 0xFFFF;
+    gdt[num].base_middle = (base >> 16) & 0xFF;
+    gdt[num].base_high   = (base >> 24) & 0xFF;
+
+    gdt[num].limit_low   = limit & 0xFFFF;
+    gdt[num].granularity = ((limit >> 16) & 0x0F) | (gran & 0xF0);
+
+    gdt[num].access = access;
 }
 
-void load_segments(){
-    unsigned short code_selector = CODE_SEGMENT;
-    unsigned short data_selector = DATA_SEGMENT;
+void gdt_install() {
+    gdt_ptr.limit = (sizeof(struct GDTEntry) * GDT_ENTRIES) - 1;
+    gdt_ptr.base = (uint32_t)&gdt;
 
-    asm volatile(
-        "mov %0, %%ax;"
-        "mov %%ax. %%ds;"
-        "mov %%ax. %%es;"
-        "mov %%ax. %%fs;"
-        "mov %%ax. %%gs;"
-        "mov %%ax. %%ss;"
-        "mov %1. %%ax;"
-        "jmp %%ax, $1f;"
-        "1:"
-        :
-        : "r"(data_selector), "r"(code_selector)
-        : "%ax");
-}
+    // Null descriptor
+    set_gdt_entry(0, 0, 0, 0, 0);
 
-void init_gdt(){
-    gdt[0].base_low = 0;
-    gdt[0].base_high = 0;
-    gdt[0].limit_low = 0;
-    gdt[0].granularity = 0;
+    // Kernel code segment
+    set_gdt_entry(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
 
-    gdt[1].base_low = 0;
-    gdt[1].base_high = 0;
-    gdt[1].limit_low = 0xFFFF;
-    gdt[1].granularity = 0x9A;
-    gdt[1].granularity |= 0xCF000000;   
+    // Kernel data segment
+    set_gdt_entry(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
 
-    gdt[2].base_low = 0;
-    gdt[2].base_high = 0;
-    gdt[2].limit_low = 0xFFFF;
-    gdt[2].granularity = 0x92;
-    gdt[2].granularity |= 0xCF000000;
-    
-    struct gdt gdt_ptr;
-    gdt_ptr.adress = (unsigned int)&gdt;
-    gdt_ptr.size = sizeof(gdt) - 1;
+    // User code segment
+    set_gdt_entry(3, 0, 0xFFFFFFFF, 0xFA, 0xCF);
+
+    // User data segment
+    set_gdt_entry(4, 0, 0xFFFFFFFF, 0xF2, 0xCF);
+
+    gdt_flush((uint32_t)&gdt_ptr);
 }

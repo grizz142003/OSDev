@@ -1,15 +1,10 @@
 #include "FrameBuff.h"
 #include "serial.h"
-/*void fb_move_curser(unsigned short pos)
-{
-    outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
-    outb(FB_DATA_PORT, ((pos >> 8) & 0x00FF));
-    outb(FB_COMMAND_PORT, FB_LOW_BYTE_COMMAND);
-    outb(FB_DATA_PORT, pos & 0x00FF);
-}
-    */
+#include "gdt.h"
 
 void kmain(void){
+    gdt_install();
+
     char message[] = "Gianlucas simple os";
     fb_clear();
     fb_write(message, 20);

@@ -1,24 +1,25 @@
-#ifndef gdt_h
-#define gdt_h
+// gdt.h
+#include "io.h"
 
-#define CODE_SEGMENT 0x08
-#define DATA_SEGMENT 0x10
+#ifndef GDT_H
+#define GDT_H
 
-struct gdt{
-    unsigned int adress;
-    unsigned short size;
-}__attribute__((packed));
+extern void gdt_flush(uint32_t); 
 
-struct gdt_entry{
-    unsigned int base_low;
-    unsigned int base_high;
-    unsigned int limit_low;
-    unsigned int granularity;
-};
+struct GDTEntry {
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t  base_middle;
+    uint8_t  access;
+    uint8_t  granularity;
+    uint8_t  base_high;
+} __attribute__((packed));
 
-void load_gdt(struct gdt *gdt_ptr);
-void load_segments();
-void init_gdt();
+struct GDTPointer {
+    uint16_t limit;
+    uint32_t base;
+} __attribute__((packed));
+void set_gdt_entry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
+void gdt_install(void);
 
-
-#endif
+#endif // GDT_H
